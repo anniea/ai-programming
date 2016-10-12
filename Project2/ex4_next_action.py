@@ -93,7 +93,7 @@ def main():
 			# if agent has reached a terminal state (either fail or success)
 			if done:
 				# if not at goal, agent has failed
-				if observation != 15:
+				if observation != env.observation_space.n - 1:
 					# print('Agent failed.')
 					no_of_fails += 1
 				else:
