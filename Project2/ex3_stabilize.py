@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 env_name = 'FrozenLake-v0'
 
 # alterable parameters
-no_of_episodes = 10000
+no_of_episodes = 100000
 no_of_moves = 100
 learning_rate = 0.1
 discount_rate = 0.99
@@ -42,7 +42,8 @@ def main():
 	
 	# initialize state-action value estimate
 	# actions on x-axis, states on y-axis
-	q_table = np.random.rand(env.action_space.n, env.observation_space.n)
+	# q_table = np.random.rand(env.action_space.n, env.observation_space.n)
+	q_table = np.zeros((env.action_space.n, env.observation_space.n))
 	
 	# array to hold total reward for each episode
 	total_rewards = np.array([0.0]*no_of_episodes)
@@ -111,6 +112,9 @@ def main():
 	
 	save_q_table(q_table, trial_no)
 	
+	for array in q_table:
+		print(array)
+	
 	print('Average number of moves before termination: ', total_moves/no_of_episodes)
 	print('\n\nOut of {} episodes, {} ended in success and {} ended in failure'.format(no_of_episodes, no_of_successes,
 																					   no_of_fails))
@@ -118,11 +122,11 @@ def main():
 
 def plot_episode_rewards(total_rewards, figure_nr):
 	# add random value to total rewards to better visualize data in plot
-	total_rewards += (np.random.randint(-200, 201, len(total_rewards)) / 1000)
+	total_rewards += (np.random.randint(-300, 301, len(total_rewards)) / 1000)
 	plt.figure(figsize=(20, 10))
-	plt.plot(total_rewards, 'g.', label='Total reward per episode', ms=5.0)
+	plt.plot(total_rewards, 'g.', ms=5.0)
 	plt.legend(loc='upper right')
-	plt.title('Needs a title')
+	plt.title('Total reward per episode')
 	plt.xlabel('Episode #')
 	plt.ylabel('Total reward')
 	plt.ylim(-0.5, 1.5)
