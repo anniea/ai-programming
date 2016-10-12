@@ -5,10 +5,10 @@ from os import listdir
 import matplotlib.pyplot as plt
 
 # problem choice
-env_name = 'FrozenLake-v0'
+env_name = 'Taxi-v1'
 
 # alterable parameters
-no_of_episodes = 20000
+no_of_episodes = 10000
 no_of_moves = 100
 learning_rate = 0.1
 discount_rate = 0.99
@@ -37,12 +37,11 @@ def main():
 	env = gym.make(env_name)
 
 	# start recording of environment for upload
-	# recording_path = 'recordings/' + env_name + '/FrozenLake-v0-trial-' + str(len(listdir('recordings/' + env_name)))
-	# env.monitor.start(recording_path)
+	#recording_path = 'recordings/' + env_name + '/Taxi-v1-trial-' + str(len(listdir('recordings/' + env_name)))
+	#env.monitor.start(recording_path)
 
 	# initialize state-action value estimate
 	# actions on x-axis, states on y-axis
-	# q_table = np.random.rand(env.action_space.n, env.observation_space.n)
 	q_table = np.zeros((env.action_space.n, env.observation_space.n))
 
 	# array to hold total reward for each episode
@@ -92,23 +91,18 @@ def main():
 
 			# if agent has reached a terminal state (either fail or success)
 			if done:
-				# if not at goal, agent has failed
-				if observation != env.observation_space.n - 1:
-					# print('Agent failed.')
-					no_of_fails += 1
-				else:
-					no_of_successes += 1
+				no_of_successes += 1
 				total_moves += m + 1
 				# print('Episode finished after {} moves'.format(m + 1))
 				break
 
-	# env.monitor.close()
+	env.monitor.close()
 
 	# upload to OpenAI Gym (not bothering with this just yet)
-	# gym.upload(
-	# 	recording_path,
-	# 	writeup='https://gist.github.com/gdb/b6365e79be6052e7531e7ba6ea8caf23',
-	# 	api_key='YOUR_API_KEY')
+	'''gym.upload(
+		recording_path,
+		writeup='https://gist.github.com/gdb/b6365e79be6052e7531e7ba6ea8caf23',
+		api_key='mikalbj')'''
 
 	# save_q_table(trial_no)
 
@@ -119,9 +113,9 @@ def main():
 		print('')
 	print('')
 
-	print('Average number of moves before termination: ', total_moves/no_of_episodes)
+	print('Average number of moves before success: ', total_moves/no_of_successes)
 	print('\n\nOut of {} episodes, {} ended in success and {} ended in failure'.format(no_of_episodes, no_of_successes,
-																					   no_of_fails))
+																					   no_of_episodes - no_of_successes))
 
 
 

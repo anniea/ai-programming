@@ -44,9 +44,10 @@ def main():
 	# actions on x-axis, states on y-axis
 	# q_table = np.random.rand(env.action_space.n, env.observation_space.n)
 	q_table = np.zeros((env.action_space.n, env.observation_space.n))
+	ex3_q_table = load_q_table(2)
 
 	# array to hold total reward for each episode
-	total_rewards = np.array([0]*no_of_episodes)
+	total_rewards = np.array([0.0]*no_of_episodes)
 
 	for i_episode in range(no_of_episodes):
 		# set environment initial state
@@ -54,21 +55,17 @@ def main():
 
 		# print('\n\n*** NEW EPISODE STARTED ***')
 
-		# choose initial action epsilon-greedily (with prob. 1-epsilon)
-		if 1 - epsilon > np.random.random():
-			action = np.argmax(q_table[:, observation])
-		else:
-			action = np.random.randint(env.action_space.n)
-
-		# print('Initial action:', action)
-
 		for m in range(no_of_moves):
 			# show graphical depiction of current environment
 			# print('SELECT ACTION FOR:')
 			# env.render()
 
-			# save current action before choosing a new one
-			prev_action = action
+			# choose action epsilon-greedily (with prob. 1-epsilon)
+			if 1 - epsilon > np.random.random():
+				action = np.argmax(q_table[:, observation])
+			else:
+				action = np.random.randint(env.action_space.n)
+
 			# save current observation before action is performed
 			prev_observation = observation
 
@@ -79,16 +76,16 @@ def main():
 			# update total reward for current episode
 			total_rewards[i_episode] += reward
 
-			# choose next action epsilon-greedily (with prob. 1-epsilon)
-			if 1 - epsilon > np.random.random():
-				action = np.argmax(q_table[:, observation])
-			else:
-				action = np.random.randint(env.action_space.n)
+			# update state-action value estimate based on recent experience
+			potential_future_reward = np.amax(ex3_q_table[:, observation])
+			q_table[action, prev_observation] += learning_rate * (
+				reward + (discount_rate * potential_future_reward) - q_table[action, prev_observation])
 
-			# update state-action value estimate based on chosen action
-			potential_future_reward = q_table[action, observation]
-			q_table[prev_action, prev_observation] += learning_rate * (
-				reward + (discount_rate * potential_future_reward) - q_table[prev_action, prev_observation])
+			# some prints to validate beliefs
+			# print('Old observation:', observation)
+			# print('New observation:', observation)
+			# print('Action taken:', action, '(' + ACTION_MAP[action] + ')')
+			# print('Reward gained:', reward, '\n\n')
 
 			# if agent has reached a terminal state (either fail or success)
 			if done:
@@ -110,8 +107,6 @@ def main():
 	# 	writeup='https://gist.github.com/gdb/b6365e79be6052e7531e7ba6ea8caf23',
 	# 	api_key='YOUR_API_KEY')
 
-	# save_q_table(trial_no)
-
 	print('')
 	for thing in q_table:
 		for entry in thing:
@@ -124,6 +119,19 @@ def main():
 																					   no_of_fails))
 
 
+# load q-table for use / demonstration
+def load_q_table(table_nr):
+
+	# load q-table with given table number
+	file = open('ex3_tables/q_table_' + str(table_nr) + '.pkl', 'rb')
+	q_table = pickle.load(file)
+	file.close()
+
+	# print relevant information about loaded network
+	print('\nQ-table nr. ' + str(table_nr) + ' loaded')
+	print('Dimensions are {}'.format(q_table.shape))
+
+	return q_table
 
 
 main()
