@@ -6,11 +6,17 @@ env_name = 'FrozenLake-v0'
 # env_name = 'Taxi-v1'
 
 # alterable parameters
-no_of_episodes = 20
-no_of_trials = 100
+no_of_episodes = 100
+no_of_moves = 100
+
+# other global variables
+no_of_successes = 0
+no_of_fails = 0
 
 
 def main():
+	global no_of_successes, no_of_fails
+	
 	# create environment
 	env = gym.make(env_name)
 	
@@ -22,12 +28,11 @@ def main():
 		# set environment initial state
 		observation = env.reset()
 		
-		for t in range(no_of_trials):
+		print('\n\n*** NEW EPISODE STARTED ***')
+		
+		for m in range(no_of_moves):
 			# show graphical depiction of current environment
 			env.render()
-			
-			# print state identifier
-			print(observation, '\n')
 			
 			# choose random action
 			action = env.action_space.sample()
@@ -38,7 +43,13 @@ def main():
 			
 			# if agent has reached a terminal state (either fail or success)
 			if done:
-				print("Episode finished after {} timesteps".format(t+1))
+				# if not at goal, agent has failed
+				if observation != 15:
+					print('Agent failed.')
+					no_of_fails += 1
+				else:
+					no_of_successes += 1
+				print('Episode finished after {} moves'.format(m + 1))
 				break
 	
 	# env.monitor.close()
@@ -47,6 +58,10 @@ def main():
 	# 	recording_path,
 	# 	writeup='https://gist.github.com/gdb/b6365e79be6052e7531e7ba6ea8caf23',
 	# 	api_key='YOUR_API_KEY')
+			
+	print('\n\nOut of {} episodes, {} ended in success and {} ended in failure'.format(no_of_episodes,
+																					   no_of_successes,
+																					   no_of_fails))
 	
 main()
 
