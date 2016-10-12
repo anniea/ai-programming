@@ -10,13 +10,12 @@ env_name = 'FrozenLake-v0'
 # alterable parameters
 no_of_episodes = 100000
 no_of_moves = 100
-learning_rate = 0.1
+learning_rate = 0.6
 discount_rate = 0.99
 epsilon = 0.1
 
 # other global variables
 no_of_successes = 0
-no_of_fails = 0
 ACTION_MAP = ['left', 'down', 'right', 'up']  # used for printing
 total_moves = 0
 
@@ -31,7 +30,7 @@ total_moves = 0
 
 
 def main():
-	global no_of_successes, no_of_fails, total_moves
+	global no_of_successes, total_moves
 	
 	# create environment
 	env = gym.make(env_name)
@@ -42,7 +41,6 @@ def main():
 	
 	# initialize state-action value estimate
 	# actions on x-axis, states on y-axis
-	# q_table = np.random.rand(env.action_space.n, env.observation_space.n)
 	q_table = np.zeros((env.action_space.n, env.observation_space.n))
 	
 	# array to hold total reward for each episode
@@ -79,20 +77,11 @@ def main():
 			potential_future_reward = np.amax(q_table[:, observation])
 			q_table[action, prev_observation] += learning_rate * (
 				reward + (discount_rate * potential_future_reward) - q_table[action, prev_observation])
-			
-			# some prints to validate beliefs
-			# print('Old observation:', observation)
-			# print('New observation:', observation)
-			# print('Action taken:', action, '(' + ACTION_MAP[action] + ')')
-			# print('Reward gained:', reward, '\n\n')
 		
 			# if agent has reached a terminal state (either fail or success)
 			if done:
-				# if not at goal, agent has failed
-				if observation != 15:
-					# print('Agent failed.')
-					no_of_fails += 1
-				else:
+				# if reward is 1, agent has reached goal
+				if reward == 1:
 					no_of_successes += 1
 				total_moves += m + 1
 				# print('Episode finished after {} moves'.format(m + 1))
@@ -112,12 +101,9 @@ def main():
 	
 	save_q_table(q_table, trial_no)
 	
-	for array in q_table:
-		print(array)
-	
-	print('Average number of moves before termination: ', total_moves/no_of_episodes)
-	print('\n\nOut of {} episodes, {} ended in success and {} ended in failure'.format(no_of_episodes, no_of_successes,
-																					   no_of_fails))
+	print('\n\nAverage number of moves before termination: ', total_moves/no_of_episodes)
+	print('Out of {} episodes, {} ended in success and {} ended in failure'.format(
+		no_of_episodes, no_of_successes, no_of_episodes - no_of_successes))
 
 
 def plot_episode_rewards(total_rewards, figure_nr):
@@ -125,7 +111,6 @@ def plot_episode_rewards(total_rewards, figure_nr):
 	total_rewards += (np.random.randint(-300, 301, len(total_rewards)) / 1000)
 	plt.figure(figsize=(20, 10))
 	plt.plot(total_rewards, 'g.', ms=5.0)
-	plt.legend(loc='upper right')
 	plt.title('Total reward per episode')
 	plt.xlabel('Episode #')
 	plt.ylabel('Total reward')
@@ -135,18 +120,19 @@ def plot_episode_rewards(total_rewards, figure_nr):
 	plt.clf()
 
 
-# save q-table for later use / easy demonstration of correctness
+# save q-table for later use
 def save_q_table(q_table, table_nr):
 	
 	# save q-table to given folder with unused name
 	file = open('ex3_tables/q_table_' + str(table_nr) + '.pkl', 'wb')
 	pickle.dump(q_table, file, 2)
 	file.close()
-	
+
+	# print relevant information about saved q-table
 	print('\nQ-table saved as q_table_' + str(table_nr) + '.pkl')
 
 
-# load q-table for use / demonstration
+# load q-table for use
 def load_q_table(table_nr):
 	
 	# load q-table with given table number
@@ -154,7 +140,7 @@ def load_q_table(table_nr):
 	q_table = pickle.load(file)
 	file.close()
 	
-	# print relevant information about loaded network
+	# print relevant information about loaded q-table
 	print('\nQ-table nr. ' + str(table_nr) + ' loaded')
 	print('Dimensions are {}'.format(q_table.shape))
 	
