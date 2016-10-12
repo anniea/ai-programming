@@ -1,0 +1,3 @@
+LIBRARY ga_functions.pyd
+EXPORTS
+PyInit_ga_functions
