@@ -44,7 +44,7 @@ def main():
 	# actions on x-axis, states on y-axis
 	# q_table = np.random.rand(env.action_space.n, env.observation_space.n)
 	q_table = np.zeros((env.action_space.n, env.observation_space.n))
-	ex3_q_table = load_q_table(2)
+	ex3_q_table = load_q_table(1)
 
 	# array to hold total reward for each episode
 	total_rewards = np.array([0.0]*no_of_episodes)
