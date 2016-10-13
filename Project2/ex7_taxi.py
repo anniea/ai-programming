@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 env_name = 'Taxi-v1'
 
 # alterable parameters
-no_of_episodes = 10000
+no_of_episodes = 4000
 no_of_moves = 100
 learning_rate = 0.1
 discount_rate = 0.99
@@ -104,6 +104,10 @@ def main():
 		writeup='https://gist.github.com/gdb/b6365e79be6052e7531e7ba6ea8caf23',
 		api_key='mikalbj')'''
 
+	trial_no = len(listdir('ex7_plots'))
+
+	plot_episode_rewards(total_rewards, trial_no)
+
 	# save_q_table(trial_no)
 
 	print('')
@@ -118,6 +122,18 @@ def main():
 																					   no_of_episodes - no_of_successes))
 
 
+def plot_episode_rewards(total_rewards, figure_nr):
+	# add random value to total rewards to better visualize data in plot
+	#total_rewards += (np.random.randint(-300, 301, len(total_rewards)) / 1000)
+	plt.figure(figsize=(20, 10))
+	plt.plot(total_rewards, 'g.', ms=5.0)
+	plt.title('Total Reward per Episode for Taxi Environment')
+	plt.xlabel('Episode #')
+	plt.ylabel('Total Reward')
+	#plt.ylim(-100, 100)
+	#plt.yticks([0, 1])
+	plt.savefig('ex7_plots/trial_' + str(figure_nr) + '_total_rewards.png')
+	plt.clf()
 
 
 main()
