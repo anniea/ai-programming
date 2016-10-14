@@ -1,20 +1,20 @@
-Learning rate: 0.1
+Learning rate: 0.1 (35085 33081 36458 31661 37149 37211 38329 38015 38282 30531)
 Average number of moves before termination:  25.21641
 Out of 100000 episodes, 29875 ended in success and 68232 ended in failure
 
-Learning rate: 0.2
+Learning rate: 0.2 (this one is somewhat irregular, but sometimes end in 35k+)
 Average number of moves before termination:  28.04203
 Out of 100000 episodes, 36830 ended in success and 60637 ended in failure
 
-Learning rate: 0.3
+Learning rate: 0.3 (this one is somewhat irregular, but sometimes end in 30k+)
 Average number of moves before termination:  27.00444
 Out of 100000 episodes, 32208 ended in success and 65563 ended in failure
 
-Learning rate: 0.4
+Learning rate: 0.4 (confirmed by multiple tries)
 Average number of moves before termination:  23.52659
-Out of 100000 episodes, 22037 ended in success and 76447 ended in failure
+Out of 100000 episodes, 29480 ended in success and 76447 ended in failure
 
-Learning rate: 0.5
+Learning rate: 0.5 (confirmed by multiple tries)
 Average number of moves before termination:  26.30353
 Out of 100000 episodes, 28303 ended in success and 70035 ended in failure
 

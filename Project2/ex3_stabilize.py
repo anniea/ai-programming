@@ -10,7 +10,7 @@ env_name = 'FrozenLake-v0'
 # alterable parameters
 no_of_episodes = 100000
 no_of_moves = 100
-learning_rate = 0.6
+learning_rate = 0.0625
 discount_rate = 0.99
 epsilon = 0.1
 
@@ -42,6 +42,7 @@ def main():
 	# initialize state-action value estimate
 	# actions on x-axis, states on y-axis
 	q_table = np.zeros((env.action_space.n, env.observation_space.n))
+	# q_table = load_q_table(0)
 	
 	# array to hold total reward for each episode
 	total_rewards = np.array([0.0]*no_of_episodes)
@@ -54,14 +55,17 @@ def main():
 		
 		for m in range(no_of_moves):
 			# show graphical depiction of current environment
-			# print('SELECT ACTION FOR:')
+			# print('\nSELECT ACTION FOR:')
 			# env.render()
 			
 			# choose action epsilon-greedily (with prob. 1-epsilon)
 			if 1 - epsilon > np.random.random():
 				action = np.argmax(q_table[:, observation])
 			else:
+				# print('\nRandom action taken.')
 				action = np.random.randint(env.action_space.n)
+				
+			# print('Action taken:', action, '(' + ACTION_MAP[action] + ')')
 			
 			# save current observation before action is performed
 			prev_observation = observation
@@ -98,8 +102,14 @@ def main():
 	trial_no = len(listdir('ex3_plots'))
 	
 	plot_episode_rewards(total_rewards, trial_no)
-	
+
 	save_q_table(q_table, trial_no)
+	
+	print('\nQ-table:')
+	for action_list in q_table:
+		for value in action_list:
+			print('{0:.5f}'.format(value), end=' ')
+		print('')
 	
 	print('\n\nAverage number of moves before termination: ', total_moves/no_of_episodes)
 	print('Out of {} episodes, {} ended in success and {} ended in failure'.format(
