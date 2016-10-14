@@ -34,6 +34,7 @@ def plot_taxi_rewards(total_rewards, plot_path, figure_nr):
 	plt.title('Total Reward per Episode for Taxi Environment')
 	plt.xlabel('Episode #')
 	plt.ylabel('Total Reward')
+	plt.yticks([-500, 50])
 	plt.savefig(plot_path + '/trial_' + str(figure_nr) + '_total_rewards.png')
 	plt.clf()
 

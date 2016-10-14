@@ -7,7 +7,7 @@ from helpers import choose_action_eps_greedy, plot_taxi_rewards ,print_q_table
 env_name = 'Taxi-v1'
 
 # alterable parameters
-no_of_episodes = 4000
+no_of_episodes = 2000
 no_of_moves = 100
 learning_rate = 0.4
 discount_rate = 0.99
@@ -86,9 +86,9 @@ def main():
 	# 	writeup='https://gist.github.com/gdb/b6365e79be6052e7531e7ba6ea8caf23',
 	# 	api_key='mikalbj')
 
-	trial_no = len(listdir('ex7_plots'))
+	trial_no = len(listdir('ex7_sarsa_plots'))
 
-	plot_taxi_rewards(total_rewards, 'ex7_plots', trial_no)
+	plot_taxi_rewards(total_rewards, 'ex7_sarsa_plots', trial_no)
 
 	print_q_table(q_table)
 	
