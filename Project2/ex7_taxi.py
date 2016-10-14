@@ -1,8 +1,7 @@
 import gym
-import pickle
 import numpy as np
 from os import listdir
-import matplotlib.pyplot as plt
+from helpers import choose_action_eps_greedy, plot_taxi_rewards ,print_q_table
 
 # problem choice
 env_name = 'Taxi-v1'
@@ -10,35 +9,24 @@ env_name = 'Taxi-v1'
 # alterable parameters
 no_of_episodes = 4000
 no_of_moves = 100
-learning_rate = 0.1
+learning_rate = 0.4
 discount_rate = 0.99
 epsilon = 0.1
 
 # other global variables
 no_of_successes = 0
-no_of_fails = 0
-ACTION_MAP = ['left', 'down', 'right', 'up']  # used for printing
 total_moves = 0
 
 
-#####################################################################
-# IMPORTANT NOTE FOR FROZEN LAKE:									#
-# OBSERVATION RANGES FROM 0-15, WHERE EACH NUMBER n DENOTE TO THE	#
-# STATE WHERE n == ((4*i)+j) FOR AGENT POSITION (i, j) 				#
-# ACTIONS RANGES FROM 0-3, WITH THE FOLLOWING MAPPING:				#
-# 0->LEFT, 1->DOWN, 2->RIGHT, 3->UP									#
-#####################################################################
-
-
 def main():
-	global no_of_successes, no_of_fails, total_moves
+	global no_of_successes, total_moves
 
 	# create environment
 	env = gym.make(env_name)
 
 	# start recording of environment for upload
-	#recording_path = 'recordings/' + env_name + '/Taxi-v1-trial-' + str(len(listdir('recordings/' + env_name)))
-	#env.monitor.start(recording_path)
+	# recording_path = 'recordings/' + env_name + '/Taxi-v1-trial-' + str(len(listdir('recordings/' + env_name)))
+	# env.monitor.start(recording_path)
 
 	# initialize state-action value estimate
 	# actions on x-axis, states on y-axis
@@ -54,16 +42,13 @@ def main():
 		# print('\n\n*** NEW EPISODE STARTED ***')
 
 		# choose initial action epsilon-greedily (with prob. 1-epsilon)
-		if 1 - epsilon > np.random.random():
-			action = np.argmax(q_table[:, observation])
-		else:
-			action = np.random.randint(env.action_space.n)
+		action = choose_action_eps_greedy(q_table, observation, epsilon, env.action_space.n)
 
 		# print('Initial action:', action)
 
 		for m in range(no_of_moves):
 			# show graphical depiction of current environment
-			# print('SELECT ACTION FOR:')
+			# print('\nSELECT ACTION FOR:')
 			# env.render()
 
 			# save current action before choosing a new one
@@ -79,10 +64,7 @@ def main():
 			total_rewards[i_episode] += reward
 
 			# choose next action epsilon-greedily (with prob. 1-epsilon)
-			if 1 - epsilon > np.random.random():
-				action = np.argmax(q_table[:, observation])
-			else:
-				action = np.random.randint(env.action_space.n)
+			action = choose_action_eps_greedy(q_table, observation, epsilon, env.action_space.n)
 
 			# update state-action value estimate based on chosen action
 			potential_future_reward = q_table[action, observation]
@@ -96,44 +78,23 @@ def main():
 				# print('Episode finished after {} moves'.format(m + 1))
 				break
 
-	env.monitor.close()
+	# env.monitor.close()
 
 	# upload to OpenAI Gym (not bothering with this just yet)
-	'''gym.upload(
-		recording_path,
-		writeup='https://gist.github.com/gdb/b6365e79be6052e7531e7ba6ea8caf23',
-		api_key='mikalbj')'''
+	# gym.upload(
+	# 	recording_path,
+	# 	writeup='https://gist.github.com/gdb/b6365e79be6052e7531e7ba6ea8caf23',
+	# 	api_key='mikalbj')
 
 	trial_no = len(listdir('ex7_plots'))
 
-	plot_episode_rewards(total_rewards, trial_no)
+	plot_taxi_rewards(total_rewards, 'ex7_plots', trial_no)
 
-	# save_q_table(trial_no)
-
-	print('')
-	for thing in q_table:
-		for entry in thing:
-			print(entry, end=' ')
-		print('')
-	print('')
-
-	print('Average number of moves before success: ', total_moves/no_of_successes)
-	print('\n\nOut of {} episodes, {} ended in success and {} ended in failure'.format(no_of_episodes, no_of_successes,
-																					   no_of_episodes - no_of_successes))
-
-
-def plot_episode_rewards(total_rewards, figure_nr):
-	# add random value to total rewards to better visualize data in plot
-	#total_rewards += (np.random.randint(-300, 301, len(total_rewards)) / 1000)
-	plt.figure(figsize=(20, 10))
-	plt.plot(total_rewards, 'g.', ms=5.0)
-	plt.title('Total Reward per Episode for Taxi Environment')
-	plt.xlabel('Episode #')
-	plt.ylabel('Total Reward')
-	#plt.ylim(-100, 100)
-	#plt.yticks([0, 1])
-	plt.savefig('ex7_plots/trial_' + str(figure_nr) + '_total_rewards.png')
-	plt.clf()
+	print_q_table(q_table)
+	
+	print('\n\nAverage number of moves before termination: ', total_moves / no_of_episodes)
+	print('Out of {} episodes, {} ended in success and {} ended in failure'.format(
+		no_of_episodes, no_of_successes, no_of_episodes - no_of_successes))
 
 
 main()

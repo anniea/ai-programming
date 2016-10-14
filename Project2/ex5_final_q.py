@@ -1,8 +1,7 @@
 import gym
-import pickle
 import numpy as np
 from os import listdir
-import matplotlib.pyplot as plt
+from helpers import load_q_table, choose_action_eps_greedy, print_q_table
 
 # problem choice
 env_name = 'FrozenLake-v0'
@@ -16,7 +15,6 @@ epsilon = 0.1
 
 # other global variables
 no_of_successes = 0
-no_of_fails = 0
 ACTION_MAP = ['left', 'down', 'right', 'up']  # used for printing
 total_moves = 0
 
@@ -31,7 +29,7 @@ total_moves = 0
 
 
 def main():
-	global no_of_successes, no_of_fails, total_moves
+	global no_of_successes, total_moves
 
 	# create environment
 	env = gym.make(env_name)
@@ -42,9 +40,8 @@ def main():
 
 	# initialize state-action value estimate
 	# actions on x-axis, states on y-axis
-	# q_table = np.random.rand(env.action_space.n, env.observation_space.n)
 	q_table = np.zeros((env.action_space.n, env.observation_space.n))
-	ex3_q_table = load_q_table(1)
+	ex3_q_table = load_q_table('ex3_tables', 1)
 
 	# array to hold total reward for each episode
 	total_rewards = np.array([0.0]*no_of_episodes)
@@ -57,14 +54,13 @@ def main():
 
 		for m in range(no_of_moves):
 			# show graphical depiction of current environment
-			# print('SELECT ACTION FOR:')
+			# print('\nSELECT ACTION FOR:')
 			# env.render()
 
 			# choose action epsilon-greedily (with prob. 1-epsilon)
-			if 1 - epsilon > np.random.random():
-				action = np.argmax(q_table[:, observation])
-			else:
-				action = np.random.randint(env.action_space.n)
+			action = choose_action_eps_greedy(q_table, observation, epsilon, env.action_space.n)
+
+			# print('Action taken:', action, '(' + ACTION_MAP[action] + ')')
 
 			# save current observation before action is performed
 			prev_observation = observation
@@ -80,20 +76,11 @@ def main():
 			potential_future_reward = np.amax(ex3_q_table[:, observation])
 			q_table[action, prev_observation] += learning_rate * (
 				reward + (discount_rate * potential_future_reward) - q_table[action, prev_observation])
-
-			# some prints to validate beliefs
-			# print('Old observation:', observation)
-			# print('New observation:', observation)
-			# print('Action taken:', action, '(' + ACTION_MAP[action] + ')')
-			# print('Reward gained:', reward, '\n\n')
-
+			
 			# if agent has reached a terminal state (either fail or success)
 			if done:
-				# if not at goal, agent has failed
-				if observation != env.observation_space.n - 1:
-					# print('Agent failed.')
-					no_of_fails += 1
-				else:
+				# if reward is 1, agent has reached goal
+				if reward == 1:
 					no_of_successes += 1
 				total_moves += m + 1
 				# print('Episode finished after {} moves'.format(m + 1))
@@ -107,31 +94,11 @@ def main():
 	# 	writeup='https://gist.github.com/gdb/b6365e79be6052e7531e7ba6ea8caf23',
 	# 	api_key='YOUR_API_KEY')
 
-	print('')
-	for thing in q_table:
-		for entry in thing:
-			print(entry, end=' ')
-		print('')
-	print('')
+	print_q_table(q_table)
 
 	print('Average number of moves before termination: ', total_moves/no_of_episodes)
-	print('\n\nOut of {} episodes, {} ended in success and {} ended in failure'.format(no_of_episodes, no_of_successes,
-																					   no_of_fails))
-
-
-# load q-table for use / demonstration
-def load_q_table(table_nr):
-
-	# load q-table with given table number
-	file = open('ex3_tables/q_table_' + str(table_nr) + '.pkl', 'rb')
-	q_table = pickle.load(file)
-	file.close()
-
-	# print relevant information about loaded network
-	print('\nQ-table nr. ' + str(table_nr) + ' loaded')
-	print('Dimensions are {}'.format(q_table.shape))
-
-	return q_table
+	print('Out of {} episodes, {} ended in success and {} ended in failure'.format(
+		no_of_episodes, no_of_successes, no_of_episodes - no_of_successes))
 
 
 main()
