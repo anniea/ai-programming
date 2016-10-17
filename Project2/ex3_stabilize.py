@@ -11,6 +11,7 @@ no_of_episodes = 100000
 no_of_moves = 100
 learning_rate = 0.2
 discount_rate = 0.99
+epsilon = 0.2
 
 # other global variables
 no_of_successes = 0
@@ -41,12 +42,14 @@ def main():
 	# array to hold total reward for each episode
 	total_rewards = np.array([0.0]*no_of_episodes)
 	
+	# last_hundred = [0] * 100
 	
 	for i_episode in range(no_of_episodes):
 		# set environment initial state
 		observation = env.reset()
 		
 		# print('\n\n*** NEW EPISODE STARTED ***')
+		# success = 0
 		for m in range(no_of_moves):
 			# show graphical depiction of current environment
 			# print('\nSELECT ACTION FOR:')
@@ -76,7 +79,9 @@ def main():
 			if done:
 				# if reward is 1, agent has reached goal
 				if reward == 1:
+					# success = 1
 					no_of_successes += 1
+					epsilon *= 0.99
 				total_moves += m + 1
 				# print('Episode finished after {} moves'.format(m + 1))
 				break
