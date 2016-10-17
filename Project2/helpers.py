@@ -10,12 +10,12 @@ def choose_action_eps_greedy(q_table, observation, epsilon, no_of_actions):
 	else:
 		# print('\nRandom action taken.')
 		return np.random.randint(no_of_actions)
-		
+	
 	
 # plot totals rewards per episode for FrozenLake-v0
 def plot_frozen_lake_rewards(total_rewards, plot_path, figure_nr):
 	# add random value to total rewards to better visualize data in plot
-	total_rewards += (np.random.randint(-300, 301, len(total_rewards)) / 1000)
+	total_rewards += (np.random.randint(-400, 401, len(total_rewards)) / 1000)
 	plt.figure(figsize=(20, 10))
 	plt.plot(total_rewards, 'g.', ms=5.0)
 	plt.title('Total reward per Episode for Frozen Lake Environment')
@@ -69,7 +69,7 @@ def load_q_table(table_path, table_nr):
 # print q-table in a readable way
 def print_q_table(q_table):
 	print('\nQ-table:')
-	for action_list in q_table:
-		for value in action_list:
+	for action_values in q_table:
+		for value in action_values:
 			print('{0:.5f}'.format(value), end=' ')
 		print('')
