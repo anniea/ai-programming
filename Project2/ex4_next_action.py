@@ -34,10 +34,6 @@ def main():
 	# create environment
 	env = gym.make(env_name)
 
-	# start recording of environment for upload
-	# recording_path = 'recordings/' + env_name + '/FrozenLake-v0-trial-' + str(len(listdir('recordings/' + env_name)))
-	# env.monitor.start(recording_path)
-
 	# initialize state-action value estimate
 	# actions on x-axis, states on y-axis
 	q_table = np.zeros((env.action_space.n, env.observation_space.n))
@@ -53,8 +49,6 @@ def main():
 
 		# choose initial action epsilon-greedily (with prob. 1-epsilon)
 		action = choose_action_eps_greedy(q_table, observation, epsilon, env.action_space.n)
-
-		# print('Initial action:', action)
 
 		for m in range(no_of_moves):
 			# show graphical depiction of current environment
@@ -89,14 +83,6 @@ def main():
 				total_moves += m + 1
 				# print('Episode finished after {} moves'.format(m + 1))
 				break
-
-	# env.monitor.close()
-
-	# upload to OpenAI Gym (not bothering with this just yet)
-	# gym.upload(
-	# 	recording_path,
-	# 	writeup='https://gist.github.com/gdb/b6365e79be6052e7531e7ba6ea8caf23',
-	# 	api_key='YOUR_API_KEY')
 	
 	print_q_table(q_table)
 

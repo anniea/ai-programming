@@ -1,6 +1,5 @@
 import gym
 import numpy as np
-from os import listdir
 from helpers import choose_action_eps_greedy
 
 # problem choice
@@ -32,10 +31,6 @@ def main():
 	# create environment
 	env = gym.make(env_name)
 	
-	# start recording of environment for upload
-	# recording_path = 'recordings/' + env_name + '/FrozenLake-v0-trial-' + str(len(listdir('recordings/' + env_name)))
-	# env.monitor.start(recording_path)
-	
 	# initialize state-action value estimate
 	# actions on x-axis, states on y-axis
 	q_table = np.full((env.action_space.n, env.observation_space.n), 0.5)
@@ -46,7 +41,7 @@ def main():
 	for i_episode in range(no_of_episodes):
 		# set environment initial state
 		observation = env.reset()
-		
+
 		# print('\n\n*** NEW EPISODE STARTED ***')
 		
 		for m in range(no_of_moves):
@@ -75,14 +70,6 @@ def main():
 					no_of_successes += 1
 				# print('Episode finished after {} moves'.format(m + 1))
 				break
-			
-	# env.monitor.close()
-	
-	# upload to OpenAI Gym (not bothering with this just yet)
-	# gym.upload(
-	# 	recording_path,
-	# 	writeup='https://gist.github.com/gdb/b6365e79be6052e7531e7ba6ea8caf23',
-	# 	api_key='YOUR_API_KEY')
 	
 	print('Out of {} episodes, {} ended in success and {} ended in failure'.format(
 		no_of_episodes, no_of_successes, no_of_episodes - no_of_successes))
