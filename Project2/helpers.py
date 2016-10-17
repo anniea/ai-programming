@@ -3,27 +3,22 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-# choose action epsilon-greedily (with prob. 1-epsilon)
+# choose action epsilon-greedily (greedy with prob. 1-epsilon)
 def choose_action_eps_greedy(q_table, observation, epsilon, no_of_actions):
 	if 1 - epsilon > np.random.random():
 		return np.argmax(q_table[:, observation])
 	else:
-		# print('\nRandom action taken.')
 		return np.random.randint(no_of_actions)
 	
 	
-# plot totals rewards per episode for FrozenLake-v0
+# plot average rewards per episode for FrozenLake-v0
 def plot_frozen_lake_rewards(total_rewards, plot_path, figure_nr):
-	# add random value to total rewards to better visualize data in plot
-	total_rewards += (np.random.randint(-400, 401, len(total_rewards)) / 1000)
 	plt.figure(figsize=(20, 10))
-	plt.plot(total_rewards, 'g.', ms=5.0)
-	plt.title('Total reward per Episode for Frozen Lake Environment')
+	plt.plot(total_rewards, 'b-')
+	plt.title('Average Reward per Episode for Frozen Lake Environment')
 	plt.xlabel('Episode #')
-	plt.ylabel('Total reward')
-	plt.ylim(-0.5, 1.5)
-	plt.yticks([0, 1])
-	plt.savefig(plot_path + '/trial_' + str(figure_nr) + '_total_rewards.png')
+	plt.ylabel('Average Reward')
+	plt.savefig(plot_path + '/flv0_' + str(figure_nr) + '_avg_rewards.png')
 	plt.clf()
 
 
@@ -35,7 +30,7 @@ def plot_taxi_rewards(total_rewards, plot_path, figure_nr):
 	plt.xlabel('Episode #')
 	plt.ylabel('Total Reward')
 	plt.yticks([-500, 50])
-	plt.savefig(plot_path + '/trial_' + str(figure_nr) + '_total_rewards.png')
+	plt.savefig(plot_path + '/taxiv1_' + str(figure_nr) + '_total_rewards.png')
 	plt.clf()
 
 

@@ -1,5 +1,4 @@
 import gym
-from os import listdir
 
 # problem choice
 env_name = 'FrozenLake-v0'
@@ -48,4 +47,3 @@ def main():
 		no_of_episodes, no_of_successes, no_of_episodes - no_of_successes))
 	
 main()
-

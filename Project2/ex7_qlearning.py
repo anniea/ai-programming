@@ -1,7 +1,7 @@
 import gym
 import numpy as np
 from os import listdir
-from helpers import choose_action_eps_greedy, plot_taxi_rewards ,print_q_table
+from helpers import choose_action_eps_greedy, plot_taxi_rewards, print_q_table
 
 # problem choice
 env_name = 'Taxi-v1'
@@ -36,13 +36,12 @@ def main():
 		observation = env.reset()
 
 		# print('\n\n*** NEW EPISODE STARTED ***')
-
 		for m in range(no_of_moves):
 			# show graphical depiction of current environment
 			# print('\nSELECT ACTION FOR:')
 			# env.render()
 
-			# choose next action epsilon-greedily (with prob. 1-epsilon)
+			# choose next action epsilon-greedily (greedy with prob. 1-epsilon)
 			action = choose_action_eps_greedy(q_table, observation, epsilon, env.action_space.n)
 
 			# save current observation before action is performed
@@ -60,14 +59,14 @@ def main():
 			q_table[action, prev_observation] += learning_rate * (
 				reward + (discount_rate * potential_future_reward) - q_table[action, prev_observation])
 
-			# if agent has reached a terminal state (either fail or success)
+			# if agent has reached a terminal state (must be success)
 			if done:
 				no_of_successes += 1
 				total_moves += m + 1
-				# print('Episode finished after {} moves'.format(m + 1))
 				break
 
 	trial_no = len(listdir('ex7_qlearning_plots'))
+	
 	plot_taxi_rewards(total_rewards, 'ex7_qlearning_plots', trial_no)
 
 	print_q_table(q_table)
@@ -75,6 +74,5 @@ def main():
 	print('\n\nAverage number of moves before termination: ', total_moves / no_of_episodes)
 	print('Out of {} episodes, {} ended in success and {} ended in failure'.format(
 		no_of_episodes, no_of_successes, no_of_episodes - no_of_successes))
-
 
 main()

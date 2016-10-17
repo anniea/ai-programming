@@ -1,7 +1,7 @@
 import gym
 import numpy as np
 from os import listdir
-from helpers import choose_action_eps_greedy, plot_taxi_rewards ,print_q_table
+from helpers import choose_action_eps_greedy, plot_taxi_rewards, print_q_table
 
 # problem choice
 env_name = 'Taxi-v1'
@@ -37,7 +37,7 @@ def main():
 
 		# print('\n\n*** NEW EPISODE STARTED ***')
 
-		# choose initial action epsilon-greedily (with prob. 1-epsilon)
+		# choose initial action epsilon-greedily (greedy with prob. 1-epsilon)
 		action = choose_action_eps_greedy(q_table, observation, epsilon, env.action_space.n)
 
 		for m in range(no_of_moves):
@@ -57,7 +57,7 @@ def main():
 			# update total reward for current episode
 			total_rewards[i_episode] += reward
 
-			# choose next action epsilon-greedily (with prob. 1-epsilon)
+			# choose next action epsilon-greedily (greedy with prob. 1-epsilon)
 			action = choose_action_eps_greedy(q_table, observation, epsilon, env.action_space.n)
 
 			# update state-action value estimate based on chosen action
@@ -65,11 +65,10 @@ def main():
 			q_table[prev_action, prev_observation] += learning_rate * (
 				reward + (discount_rate * potential_future_reward) - q_table[prev_action, prev_observation])
 
-			# if agent has reached a terminal state (either fail or success)
+			# if agent has reached a terminal state (must be success)
 			if done:
 				no_of_successes += 1
 				total_moves += m + 1
-				# print('Episode finished after {} moves'.format(m + 1))
 				break
 
 	trial_no = len(listdir('ex7_sarsa_plots'))
@@ -80,6 +79,5 @@ def main():
 	print('\n\nAverage number of moves before termination: ', total_moves / no_of_episodes)
 	print('Out of {} episodes, {} ended in success and {} ended in failure'.format(
 		no_of_episodes, no_of_successes, no_of_episodes - no_of_successes))
-
 
 main()

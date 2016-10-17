@@ -8,11 +8,10 @@ env_name = 'FrozenLake-v0'
 # alterable parameters
 no_of_episodes = 100
 no_of_moves = 100
-epsilon = 0.4
+epsilon = 0.1
 
 # other global variables
 no_of_successes = 0
-no_of_fails = 0
 ACTION_MAP = ['left', 'down', 'right', 'up']  # used for printing
 
 
@@ -26,7 +25,7 @@ ACTION_MAP = ['left', 'down', 'right', 'up']  # used for printing
 
 
 def main():
-	global no_of_successes, no_of_fails
+	global no_of_successes
 	
 	# create environment
 	env = gym.make(env_name)
@@ -52,7 +51,7 @@ def main():
 			# choose action greedily (2b)
 			# action = np.argmax(q_table[:, observation])
 			
-			# choose action epsilon-greedily (with prob. 1-epsilon) (2c)
+			# choose action epsilon-greedily (greedy with prob. 1-epsilon) (2c)
 			action = choose_action_eps_greedy(q_table, observation, epsilon, env.action_space.n)
 
 			# print('Action taken:', action, '(' + ACTION_MAP[action] + ')')
@@ -68,11 +67,9 @@ def main():
 				# if reward is 1, agent has reached goal
 				if reward == 1:
 					no_of_successes += 1
-				# print('Episode finished after {} moves'.format(m + 1))
 				break
 	
 	print('Out of {} episodes, {} ended in success and {} ended in failure'.format(
 		no_of_episodes, no_of_successes, no_of_episodes - no_of_successes))
-
 
 main()

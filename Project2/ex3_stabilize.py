@@ -1,17 +1,17 @@
 import gym
 import numpy as np
 from os import listdir
-from helpers import plot_frozen_lake_rewards, save_q_table, load_q_table, print_q_table, choose_action_eps_greedy
+from helpers import plot_frozen_lake_rewards, save_q_table, print_q_table, choose_action_eps_greedy
 
 # problem choice
 env_name = 'FrozenLake-v0'
 
 # alterable parameters
-no_of_episodes = 100000
+no_of_episodes = 50000
 no_of_moves = 100
-learning_rate = 0.2
+learning_rate = 0.3
 discount_rate = 0.99
-epsilon = 0.2
+epsilon = 0.5
 
 # other global variables
 no_of_successes = 0
@@ -37,25 +37,24 @@ def main():
 	# initialize state-action value estimate
 	# actions on x-axis, states on y-axis
 	q_table = np.zeros((env.action_space.n, env.observation_space.n))
-	# q_table = load_q_table('ex3_tables', 0)
 	
-	# array to hold total reward for each episode
-	total_rewards = np.array([0.0]*no_of_episodes)
+	# array to hold average reward across every finished episode
+	average_rewards = np.array([0.0]*no_of_episodes)
 	
-	# last_hundred = [0] * 100
+	# hold sum of rewards for every finished episode
+	total_reward = 0
 	
 	for i_episode in range(no_of_episodes):
 		# set environment initial state
 		observation = env.reset()
 		
 		# print('\n\n*** NEW EPISODE STARTED ***')
-		# success = 0
 		for m in range(no_of_moves):
 			# show graphical depiction of current environment
 			# print('\nSELECT ACTION FOR:')
 			# env.render()
 			
-			# choose action epsilon-greedily (with prob. 1-epsilon)
+			# choose action epsilon-greedily (greedy with prob. 1-epsilon)
 			action = choose_action_eps_greedy(q_table, observation, epsilon, env.action_space.n)
 				
 			# print('Action taken:', action, '(' + ACTION_MAP[action] + ')')
@@ -67,9 +66,6 @@ def main():
 			# return values are of type object, float, boolean, dict
 			observation, reward, done, info = env.step(action)
 			
-			# update total reward for current episode
-			total_rewards[i_episode] += reward
-			
 			# update state-action value estimate based on recent experience
 			potential_future_reward = np.amax(q_table[:, observation])
 			q_table[action, prev_observation] += learning_rate * (
@@ -79,21 +75,19 @@ def main():
 			if done:
 				# if reward is 1, agent has reached goal
 				if reward == 1:
-					# success = 1
 					no_of_successes += 1
+					# reduce epsilon to reduce exploration
 					epsilon *= 0.99
 				total_moves += m + 1
-				# print('Episode finished after {} moves'.format(m + 1))
 				break
 		
-		# last_hundred.pop(0)
-		# last_hundred.append(success)
-		# if (i_episode+1) % 100 == 0:
-		# 	print('Correctness: {}%'.format(sum(last_hundred)))
+		# update total reward and average reward with reward from current episode
+		total_reward += reward
+		average_rewards[i_episode] = total_reward / (i_episode + 1)
 		
 	trial_no = len(listdir('ex3_plots'))
 	
-	plot_frozen_lake_rewards(total_rewards, 'ex3_plots', trial_no)
+	plot_frozen_lake_rewards(average_rewards, 'ex3_plots', trial_no)
 
 	save_q_table(q_table, 'ex3_tables', trial_no)
 	
@@ -102,6 +96,5 @@ def main():
 	print('\n\nAverage number of moves before termination: ', total_moves/no_of_episodes)
 	print('Out of {} episodes, {} ended in success and {} ended in failure'.format(
 		no_of_episodes, no_of_successes, no_of_episodes - no_of_successes))
-
 
 main()
