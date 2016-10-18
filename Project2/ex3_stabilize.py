@@ -1,7 +1,7 @@
 import gym
 import numpy as np
 from os import listdir
-from helpers import plot_frozen_lake_rewards, save_q_table, print_q_table, choose_action_eps_greedy
+from helpers import plot_frozen_lake_rewards, plot_frozen_lake_avg_rewards, save_q_table, print_q_table, choose_action_eps_greedy
 
 # problem choice
 env_name = 'FrozenLake-v0'
@@ -38,11 +38,11 @@ def main():
 	# actions on x-axis, states on y-axis
 	q_table = np.zeros((env.action_space.n, env.observation_space.n))
 	
+	# array to hold total reward for every episode
+	total_rewards = np.array([0.0]*no_of_episodes)
+	
 	# array to hold average reward across every finished episode
 	average_rewards = np.array([0.0]*no_of_episodes)
-	
-	# hold sum of rewards for every finished episode
-	total_reward = 0
 	
 	for i_episode in range(no_of_episodes):
 		# set environment initial state
@@ -82,12 +82,14 @@ def main():
 				break
 		
 		# update total reward and average reward with reward from current episode
-		total_reward += reward
-		average_rewards[i_episode] = total_reward / (i_episode + 1)
+		total_rewards[i_episode] = reward
+		average_rewards[i_episode] = np.sum(total_rewards[:i_episode+1]) / (i_episode + 1.0)
 		
-	trial_no = len(listdir('ex3_plots'))
+	trial_no = len(listdir('ex3_tables'))
 	
-	plot_frozen_lake_rewards(average_rewards, 'ex3_plots', trial_no)
+	plot_frozen_lake_rewards(total_rewards, 'ex3_plots', trial_no)
+	
+	plot_frozen_lake_avg_rewards(average_rewards, 'ex3_plots', trial_no)
 
 	save_q_table(q_table, 'ex3_tables', trial_no)
 	
