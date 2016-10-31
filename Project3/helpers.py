@@ -36,7 +36,7 @@ def read_tsp_data(filename):
 	# print("All Y's:")
 	# print(data_points[:, 1])
 		
-	return data_points
+	return data_points/np.amax(data_points), data_points
 
 
 def plot_tsp_data(neuron_points, city_points, num):
@@ -45,7 +45,8 @@ def plot_tsp_data(neuron_points, city_points, num):
 	# plot tsp cities positions
 	plt.plot(np.append(city_points[:, 0], city_points[0, 0]),
 			 np.append(city_points[:, 1], city_points[0, 1]),
-			 'ro-', label='City Coordinates')
+			 'ro', label='City Coordinates')
+	
 	# plot neuron positions
 	plt.plot(np.append(neuron_points[:, 0], neuron_points[0, 0]),
 			 np.append(neuron_points[:, 1], neuron_points[0, 1]),
@@ -53,8 +54,6 @@ def plot_tsp_data(neuron_points, city_points, num):
 	
 	plt.legend(loc='upper right')
 	plt.title('Self Organizing Map #' + str(num))
-	# plt.xlim(-0.05, 1.05)
-	# plt.ylim(-0.05, 1.05)
-	plt.savefig('plots/trial_%d_#%d.png' % (len(listdir('plots')), num))
+	plt.savefig('intermediate_plots/trial_%d_#%d.png' % (len(listdir('solutions')), num))
 	# plt.show()
 	plt.clf()
