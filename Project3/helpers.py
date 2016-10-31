@@ -57,6 +57,7 @@ def plot_intermediate_tsp(neuron_points, city_points, num):
 	plt.savefig('intermediate_plots/trial_%d_#%d.png' % (len(listdir('solutions')), num))
 	# plt.show()
 	plt.clf()
+	plt.close()
 
 
 def plot_solution_tsp(solution_points):
@@ -72,3 +73,6 @@ def plot_solution_tsp(solution_points):
 	plt.savefig('solutions/trial_%d_solution.png' % len(listdir('solutions')))
 	# plt.show()
 	plt.clf()
+	plt.close()
+	
+	print('Solution saved as trial_%d_solution.png' % len(listdir('solutions')))
