@@ -11,7 +11,6 @@ def read_tsp_data(filename):
 	line = file.readline()
 	while 'EOF' not in line:
 		coordinates = line.split(' ')
-		print(coordinates)
 		data_points.append((float(coordinates[1]), float(coordinates[2].strip())))
 		line = file.readline()
 		
