@@ -41,12 +41,10 @@ def read_tsp_data(filename):
 
 def plot_intermediate_tsp(neuron_points, city_points, num):
 	plt.figure(figsize=(20, 10))
-	# use append to create circular plot
 	# plot tsp cities positions
-	plt.plot(np.append(city_points[:, 0], city_points[0, 0]),
-			 np.append(city_points[:, 1], city_points[0, 1]),
-			 'ro', label='City Coordinates')
-	
+	plt.plot(city_points[:, 0], city_points[:, 1], 'ro', label='City Coordinates')
+
+	# use append to create circular plot
 	# plot neuron positions and connections
 	plt.plot(np.append(neuron_points[:, 0], neuron_points[0, 0]),
 			 np.append(neuron_points[:, 1], neuron_points[0, 1]),
@@ -75,4 +73,4 @@ def plot_solution_tsp(solution_points):
 	plt.clf()
 	plt.close()
 	
-	print('Solution saved as trial_%d_solution.png' % len(listdir('solutions')))
+	print('Solution saved as trial_%d_solution.png' % (len(listdir('solutions'))-1))

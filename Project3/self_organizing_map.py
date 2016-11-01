@@ -1,6 +1,7 @@
 from helpers import read_tsp_data, plot_intermediate_tsp, plot_solution_tsp
 import numpy as np
 import math  # TODO: maybe replace all math-functions with numpy-functions?
+import matplotlib.pyplot as plt
 
 # global variables
 tsp = 'wi29'
@@ -8,18 +9,56 @@ learning_rate = 1
 iteration_limit = 2500
 no_of_neurons = None
 plotting = True
+# lr_decay_type = 'static'
+lr_decay_type = 'linear'
+# lr_decay_type = 'exponential'
+radius_decay_type = 'static'
 
 
 def main():
 	global no_of_neurons
+		
+	# print('\nStatic:', np.array([1-(0.04*i) for i in range(0, 25)]))
+	# print('Linear:', np.array([1*(np.power(0.9, i)) for i in range(0, 25)]))
+	# print('Exp.:', np.array([1*np.power(np.e, -0.1*i) for i in range(0, 25)]))
+	#
+	# plt.figure(figsize=(20, 10))
+	# plt.plot(np.array([1-(0.04*i) for i in range(0, 25)]), 'b-', label='Static')
+	# plt.plot(np.array([1*(np.power(0.9, i)) for i in range(0, 25)]), 'r--', label='Linear')
+	# plt.plot(np.array([1*np.power(np.e, -0.1*i) for i in range(0, 25)]), 'g-.', label='Exp.')
+	#
+	# plt.legend(loc='upper right')
+	# plt.show()
+	# plt.clf()
+	# plt.close()
+	# return
+	
+	temp = np.array([0.0000027*(2500-i) for i in range(10, 2500, 10)])
+	print(temp)
+	print(np.array([1-np.sum(temp[:i]) for i in range(0, 250)]))
+	# plt.plot(np.array([np.sum(temp[:i]) for i in range(0, 26)]), 'r-', label='Linear')
+
+	# temp_exp = [1*np.power(np.e, -0.1*i) for i in range(0, 25)]
+	#
+	# plt.plot(np.array([0.04 for _ in range(1, 25)]), 'b-', label='Static')
+	# plt.plot(temp, 'r-', label='Linear')
+	# plt.plot(np.array([temp_exp[i-1]-temp_exp[i] for i in range(1, 25)]), 'g-', label='Exp.')
+	tested = [np.power(0.99, i) for i in range(0, 250, 10)]
+	print(np.array(tested))
+	# plt.plot(np.array([tested[i-1]-tested[i] for i in range(1, 25)]), 'c-', label='Tested')
+	# plt.legend(loc='upper right')
+	# plt.show()
+	# plt.clf()
+	# plt.close()
+	# return
 
 	# read data from TSP data set
 	cities_scaled, cities = read_tsp_data(tsp)
 	
 	# set parameters based on the data
 	no_of_neurons = len(cities) * 2
-	# neighborhood_radius = int(no_of_neurons/10)
-	neighborhood_radius = int(no_of_neurons/5)  # test of different value
+	neighborhood_radius = int(no_of_neurons/10)
+	# neighborhood_radius = int(no_of_neurons/5)  # test of different value
 
 	# create an initial random self-organizing-map (SOM)
 	initial_som = np.random.rand(no_of_neurons, 2)
@@ -67,13 +106,35 @@ def create_scaffold(som, cities_scaled, radius):
 
 		if plotting and not (i+1) % 100:
 			plot_intermediate_tsp(som, cities_scaled, i+1)
-
+		
 		# decrease learning_rate linearly
 		# decrease neighborhood linearly
 		# test reduction
 		if not (i+1) % 10:
-			learning_rate *= 0.99
-			radius *= 0.99
+			# perform learning rate decay
+			if lr_decay_type == 'static':
+				# reduce learning rate with a static value
+				# do for every 10 of 2500 iterations
+				learning_rate -= 0.0004
+			elif lr_decay_type == 'linear':
+				# linear formula is f(x) = 0.99*x + b, where x is learning rate and b is 0
+				# do for every 10 of 2500 iterations
+				# learning_rate *= 0.9
+				# learning_rate -= 0.000033*(2500-i+1)
+				learning_rate -= 0.0000027*(2500-i+1)
+			elif lr_decay_type == 'exponential':
+				# exp. formula is lr = init_lr * e^-kt, where k is constant and t is iteration numner
+				# do for every 10 of 2500 iterations
+				learning_rate = 1*np.power(np.e, -0.001*(i+1))
+			else:
+				print('\nNo match for learning rate decay type - no decay performed')
+			
+			# perform radius decay
+			
+			# old test (works really well)
+			if not (i + 1) % 10:
+				# learning_rate *= 0.99
+				radius *= 0.99
 			# print('Radius as float:', radius, 'and as int', math.ceil(radius))
 
 	return som
