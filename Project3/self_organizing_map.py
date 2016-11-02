@@ -1,56 +1,35 @@
 from helpers import read_tsp_data, plot_intermediate_tsp, plot_solution_tsp
 import numpy as np
-import math  # TODO: maybe replace all math-functions with numpy-functions?
-import matplotlib.pyplot as plt
+import math
 
 # global variables
-tsp = 'wi29'
+# choose tsp-problem by name (exists in data-folder)
+# tsp = 'wi29'
+# tsp = 'dj38'
+tsp = 'qa194'
+# tsp = 'uy734'
+
+# alterable parameters
 learning_rate = 1
-iteration_limit = 2500
+base_iteration_limit = 2500
+iteration_multiple = 2
+iteration_limit = base_iteration_limit * iteration_multiple
+linear_constant = 7.25/(1000 * iteration_multiple * iteration_limit)
+decay_interval = 10
 no_of_neurons = None
 plotting = True
+
+# choose decay types for learning rate (lr) and radius
 # lr_decay_type = 'static'
-lr_decay_type = 'linear'
-# lr_decay_type = 'exponential'
-radius_decay_type = 'static'
+# lr_decay_type = 'linear'
+lr_decay_type = 'exponential'
+# radius_decay_type = 'static'
+# radius_decay_type = 'linear'
+radius_decay_type = 'exponential'
 
 
 def main():
 	global no_of_neurons
-		
-	# print('\nStatic:', np.array([1-(0.04*i) for i in range(0, 25)]))
-	# print('Linear:', np.array([1*(np.power(0.9, i)) for i in range(0, 25)]))
-	# print('Exp.:', np.array([1*np.power(np.e, -0.1*i) for i in range(0, 25)]))
-	#
-	# plt.figure(figsize=(20, 10))
-	# plt.plot(np.array([1-(0.04*i) for i in range(0, 25)]), 'b-', label='Static')
-	# plt.plot(np.array([1*(np.power(0.9, i)) for i in range(0, 25)]), 'r--', label='Linear')
-	# plt.plot(np.array([1*np.power(np.e, -0.1*i) for i in range(0, 25)]), 'g-.', label='Exp.')
-	#
-	# plt.legend(loc='upper right')
-	# plt.show()
-	# plt.clf()
-	# plt.close()
-	# return
-	
-	temp = np.array([0.0000027*(2500-i) for i in range(10, 2500, 10)])
-	print(temp)
-	print(np.array([1-np.sum(temp[:i]) for i in range(0, 250)]))
-	# plt.plot(np.array([np.sum(temp[:i]) for i in range(0, 26)]), 'r-', label='Linear')
-
-	# temp_exp = [1*np.power(np.e, -0.1*i) for i in range(0, 25)]
-	#
-	# plt.plot(np.array([0.04 for _ in range(1, 25)]), 'b-', label='Static')
-	# plt.plot(temp, 'r-', label='Linear')
-	# plt.plot(np.array([temp_exp[i-1]-temp_exp[i] for i in range(1, 25)]), 'g-', label='Exp.')
-	tested = [np.power(0.99, i) for i in range(0, 250, 10)]
-	print(np.array(tested))
-	# plt.plot(np.array([tested[i-1]-tested[i] for i in range(1, 25)]), 'c-', label='Tested')
-	# plt.legend(loc='upper right')
-	# plt.show()
-	# plt.clf()
-	# plt.close()
-	# return
 
 	# read data from TSP data set
 	cities_scaled, cities = read_tsp_data(tsp)
@@ -58,30 +37,36 @@ def main():
 	# set parameters based on the data
 	no_of_neurons = len(cities) * 2
 	neighborhood_radius = int(no_of_neurons/10)
-	# neighborhood_radius = int(no_of_neurons/5)  # test of different value
-
+	
 	# create an initial random self-organizing-map (SOM)
 	initial_som = np.random.rand(no_of_neurons, 2)
+	
 	# use the SOM to create a scaffold
 	scaffold = create_scaffold(initial_som, cities_scaled, neighborhood_radius)
 
 	# read solution from scaffold
 	solution = read_solution(scaffold, cities_scaled)
-	plot_solution_tsp(np.array([cities[i] for i in solution]))
 
-	print('Solution:', solution)
-
+	# print traversal distance of initial and final solution
+	solution_distance = get_total_distance(cities, solution)
 	print('\nInitial distance:', get_total_distance(cities, [x for x in range(len(cities))]))
-	print('Computed distance:', get_total_distance(cities, solution))
+	print('Solution distance:', solution_distance)
+
+	# plot solution traversal with length
+	plot_solution_tsp(np.array([cities[i] for i in solution]), solution_distance)
 
 
 def create_scaffold(som, cities_scaled, radius):
 	global learning_rate
+	
+	# save initial radius for decay-calculations
+	initial_radius = radius
 
 	if plotting:
 		plot_intermediate_tsp(som, cities_scaled, 0)
 
 	for i in range(iteration_limit):
+		# select random city
 		city = cities_scaled[np.random.randint(0, len(cities_scaled))]
 
 		# find the best matching unit (BMU)
@@ -95,6 +80,7 @@ def create_scaffold(som, cities_scaled, radius):
 			next_neighbor = bmu + n
 			prev_neighbor = bmu - n
 
+			# ensure index is wrapped around list if out of bounds
 			if next_neighbor >= no_of_neurons:
 				next_neighbor %= no_of_neurons
 			elif prev_neighbor < 0:
@@ -107,35 +93,32 @@ def create_scaffold(som, cities_scaled, radius):
 		if plotting and not (i+1) % 100:
 			plot_intermediate_tsp(som, cities_scaled, i+1)
 		
-		# decrease learning_rate linearly
-		# decrease neighborhood linearly
-		# test reduction
-		if not (i+1) % 10:
+		# decay learning rate and radius at certain intervals
+		if not (i+1) % decay_interval:
+			
+			# static formula is x = x - k, where k is a constant
+			# linear formula is x = x - (k * (t_max - t)), where k is a constant and  t is iteration number
+			# exp. formula is x = init_x * (e^(-kt)), where k is constant and t is iteration number
+			
 			# perform learning rate decay
 			if lr_decay_type == 'static':
-				# reduce learning rate with a static value
-				# do for every 10 of 2500 iterations
-				learning_rate -= 0.0004
+				learning_rate -= decay_interval/iteration_limit
 			elif lr_decay_type == 'linear':
-				# linear formula is f(x) = 0.99*x + b, where x is learning rate and b is 0
-				# do for every 10 of 2500 iterations
-				# learning_rate *= 0.9
-				# learning_rate -= 0.000033*(2500-i+1)
-				learning_rate -= 0.0000027*(2500-i+1)
+				learning_rate -= linear_constant * (iteration_limit-i-1)
 			elif lr_decay_type == 'exponential':
-				# exp. formula is lr = init_lr * e^-kt, where k is constant and t is iteration numner
-				# do for every 10 of 2500 iterations
-				learning_rate = 1*np.power(np.e, -0.001*(i+1))
+				learning_rate = np.power(np.e, -0.001*(i+1))
 			else:
 				print('\nNo match for learning rate decay type - no decay performed')
 			
 			# perform radius decay
-			
-			# old test (works really well)
-			if not (i + 1) % 10:
-				# learning_rate *= 0.99
-				radius *= 0.99
-			# print('Radius as float:', radius, 'and as int', math.ceil(radius))
+			if radius_decay_type == 'static':
+				radius -= initial_radius * decay_interval/iteration_limit
+			elif radius_decay_type == 'linear':
+				radius -= initial_radius * linear_constant * (iteration_limit-i-1)
+			elif radius_decay_type == 'exponential':
+				radius = initial_radius * np.power(np.e, -0.001*(i+1))
+			else:
+				print('\nNo match for radius decay type - no decay performed')
 
 	return som
 
@@ -161,7 +144,7 @@ def get_bmu(som, city):
 
 # find the euclidean distance between two points in a 2D space
 def get_distance(point1, point2):
-	return math.sqrt(math.pow(point1[0] - point2[0], 2) + math.pow(point1[1] - point2[1], 2))
+	return math.sqrt(np.power(point1[0] - point2[0], 2) + np.power(point1[1] - point2[1], 2))
 
 
 # calculate the total distance of a solution
@@ -170,11 +153,6 @@ def get_total_distance(cities, solution):
 	for i in range(1, len(cities)):
 		distance += get_distance(cities[solution[i-1]], cities[solution[i]])
 	return distance
-
-
-def print_som(som):
-	for i in range(len(som)):
-		print(i+1, som[i, :])
 
 
 main()
