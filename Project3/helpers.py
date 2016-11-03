@@ -53,7 +53,7 @@ def plot_intermediate_tsp(neuron_points, city_points, num):
 	plt.close()
 
 
-def plot_solution_tsp(solution_points, solution_distance):
+def plot_solution_tsp(solution_points, solution_distance, tsp_name):
 	plt.figure(figsize=(20, 10))
 	# use append to create circular plot
 	# plot tsp solution
@@ -62,7 +62,7 @@ def plot_solution_tsp(solution_points, solution_distance):
 			 'bo-', label='Solution Traversal')
 	
 	plt.legend(loc='upper right')
-	plt.title('Self Organizing Map Solution\nLength of solution: %.2f' % solution_distance)
+	plt.title('Self Organizing Map Solution for %s\nLength of solution: %.2f' % (tsp_name, solution_distance))
 	plt.savefig('solutions/trial_%d_solution.png' % len(listdir('solutions')))
 	# plt.show()
 	plt.clf()
