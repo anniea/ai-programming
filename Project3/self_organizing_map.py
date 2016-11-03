@@ -6,63 +6,68 @@ import math
 # choose tsp-problem by name (exists in data-folder)
 # tsp = 'wi29'
 # tsp = 'dj38'
-tsp = 'qa194'
-# tsp = 'uy734'
+# tsp = 'qa194'
+tsp = 'uy734'
 
 # alterable parameters
-learning_rate = 1
+initial_learning_rate = 1
+initial_radius = None
+no_of_neurons = None
 base_iteration_limit = 2500
-iteration_multiple = 2
+iteration_multiple = 1
 iteration_limit = base_iteration_limit * iteration_multiple
 linear_constant = 7.25/(1000 * iteration_multiple * iteration_limit)
 decay_interval = 10
-no_of_neurons = None
 plotting = True
 
 # choose decay types for learning rate (lr) and radius
-# lr_decay_type = 'static'
-# lr_decay_type = 'linear'
-lr_decay_type = 'exponential'
-# radius_decay_type = 'static'
-# radius_decay_type = 'linear'
-radius_decay_type = 'exponential'
-
-
+# decay_type = 'static'
+# decay_type = 'linear'
+decay_type = 'exponential'
+	
+	
 def main():
-	global no_of_neurons
+	# find_tsp_solution(tsp)
+	auto_runner()
+	
+
+def find_tsp_solution(tsp_name):
+	global no_of_neurons, initial_radius
 
 	# read data from TSP data set
-	cities_scaled, cities = read_tsp_data(tsp)
+	cities_scaled, cities = read_tsp_data(tsp_name)
 	
-	# set parameters based on the data
+	# set global parameters based on the data
 	no_of_neurons = len(cities) * 2
-	neighborhood_radius = int(no_of_neurons/10)
+	initial_radius = math.ceil(no_of_neurons/10)
 	
 	# create an initial random self-organizing-map (SOM)
 	initial_som = np.random.rand(no_of_neurons, 2)
 	
 	# use the SOM to create a scaffold
-	scaffold = create_scaffold(initial_som, cities_scaled, neighborhood_radius)
+	scaffold = create_scaffold(initial_som, cities_scaled, initial_learning_rate, initial_radius)
 
 	# read solution from scaffold
 	solution = read_solution(scaffold, cities_scaled)
+	
+	# print decay types
+	print('\nDecay type:', decay_type)
 
 	# print traversal distance of initial and final solution
 	solution_distance = get_total_distance(cities, solution)
-	print('\nInitial distance:', get_total_distance(cities, [x for x in range(len(cities))]))
+	print('Initial distance:', get_total_distance(cities, [x for x in range(len(cities))]))
 	print('Solution distance:', solution_distance)
 
 	# plot solution traversal with length
-	plot_solution_tsp(np.array([cities[i] for i in solution]), solution_distance)
-
-
-def create_scaffold(som, cities_scaled, radius):
-	global learning_rate
+	plot_solution_tsp(np.array([cities[i] for i in solution]), solution_distance, tsp_name)
 	
-	# save initial radius for decay-calculations
-	initial_radius = radius
+	return solution_distance
+
+
+def create_scaffold(som, cities_scaled, learning_rate, radius):
 
 	if plotting:
+		# plot initial (random) scaffold
 		plot_intermediate_tsp(som, cities_scaled, 0)
 
 	for i in range(iteration_limit):
@@ -90,7 +95,7 @@ def create_scaffold(som, cities_scaled, radius):
 			som[next_neighbor] += spatial_decay * learning_rate * (city - som[next_neighbor])
 			som[prev_neighbor] += spatial_decay * learning_rate * (city - som[prev_neighbor])
 
-		if plotting and not (i+1) % 100:
+		if plotting and not (i+1) % int(iteration_limit/10):
 			plot_intermediate_tsp(som, cities_scaled, i+1)
 		
 		# decay learning rate and radius at certain intervals
@@ -101,25 +106,18 @@ def create_scaffold(som, cities_scaled, radius):
 			# exp. formula is x = init_x * (e^(-kt)), where k is constant and t is iteration number
 			
 			# perform learning rate decay
-			if lr_decay_type == 'static':
+			if decay_type == 'static':
 				learning_rate -= decay_interval/iteration_limit
-			elif lr_decay_type == 'linear':
-				learning_rate -= linear_constant * (iteration_limit-i-1)
-			elif lr_decay_type == 'exponential':
-				learning_rate = np.power(np.e, -0.001*(i+1))
-			else:
-				print('\nNo match for learning rate decay type - no decay performed')
-			
-			# perform radius decay
-			if radius_decay_type == 'static':
 				radius -= initial_radius * decay_interval/iteration_limit
-			elif radius_decay_type == 'linear':
+			elif decay_type == 'linear':
+				learning_rate -= linear_constant * (iteration_limit-i-1)
 				radius -= initial_radius * linear_constant * (iteration_limit-i-1)
-			elif radius_decay_type == 'exponential':
+			elif decay_type == 'exponential':
+				learning_rate = np.power(np.e, -0.001*(i+1))
 				radius = initial_radius * np.power(np.e, -0.001*(i+1))
 			else:
-				print('\nNo match for radius decay type - no decay performed')
-
+				print('\nNo match for decay type - no decay performed')
+			
 	return som
 
 
@@ -154,5 +152,19 @@ def get_total_distance(cities, solution):
 		distance += get_distance(cities[solution[i-1]], cities[solution[i]])
 	return distance
 
+
+def auto_runner():
+	global decay_type
+	
+	decay_types = ['static', 'linear', 'exponential']
+	tsps = ['wi29', 'dj38', 'qa194', 'uy734']
+	for decay in decay_types:
+		decay_type = decay
+		for tsp in tsps:
+			distance = 0
+			for _ in range(10):
+				distance += find_tsp_solution(tsp)
+			
+			print('\n\nAverage distance of ' + tsp + ' using ' + decay + ' decay is ' + str(distance/10))
 
 main()
