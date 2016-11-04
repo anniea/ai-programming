@@ -30,7 +30,7 @@ def read_tsp_data(filename):
 	return data_points/np.amax(data_points), data_points
 
 
-def plot_intermediate_tsp(neuron_points, city_points, num):
+def plot_intermediate_tsp(neuron_points, city_points, num, current_distance):
 	plt.figure(figsize=(20, 10))
 	# plot tsp cities positions
 	plt.plot(city_points[:, 0], city_points[:, 1], 'ro', label='City Coordinates')
@@ -46,7 +46,7 @@ def plot_intermediate_tsp(neuron_points, city_points, num):
 			 'bo-', label='Neuron Scaffold')
 	
 	plt.legend(loc='upper right')
-	plt.title('Self Organizing Map #' + str(num))
+	plt.title('Self Organizing Map #%d\nLength of current solution: %.2f' % (num, current_distance))
 	plt.savefig('intermediate_plots/trial_%d_#%d.png' % (len(listdir('solutions')), num))
 	# plt.show()
 	plt.clf()
@@ -69,3 +69,27 @@ def plot_solution_tsp(solution_points, solution_distance, tsp_name):
 	plt.close()
 	
 	print('Solution saved as trial_%d_solution.png' % (len(listdir('solutions'))-1))
+
+
+def plot_decay_reductions(iteration_limit, decay_interval, linear_constant, radius, tsp_name):
+
+	# plot learning rate decay per tenth iteration
+	linear_lr_decay = np.array([linear_constant*(iteration_limit-i) for i in range(0, iteration_limit, decay_interval)])
+	exp_lr_values = np.array([np.power(np.e, -0.001*i) for i in range(0, iteration_limit, decay_interval)])
+	plt.plot(linear_lr_decay, 'r-', label='Linear')
+	plt.plot([exp_lr_values[i-1]-exp_lr_values[i] for i in range(1, 250)], 'g-', label='Exp.')
+	plt.legend(loc='upper right')
+	plt.title('Learning Rate Decay Per Tenth Iteration for ' + tsp_name)
+	plt.savefig('decay_plots/' + tsp_name + '_lr_decay.png')
+	plt.clf()
+	
+	# plot radius decay per tenth iteration
+	linear_radius_decay = radius * linear_lr_decay
+	exp_radius_values = radius * exp_lr_values
+	plt.plot(linear_radius_decay, 'r-', label='Linear')
+	plt.plot([exp_radius_values[i-1]-exp_radius_values[i] for i in range(1, int(iteration_limit/decay_interval))], 'g-', label='Exp.')
+	plt.legend(loc='upper right')
+	plt.title('Radius Decay Per Tenth Iteration for ' + tsp_name)
+	plt.savefig('decay_plots/' + tsp_name + '_radius_decay.png')
+	plt.clf()
+	plt.close()
