@@ -1,2 +1,4 @@
 *.pyc
 .idea/
+solutions/
+intermediate_plots/
