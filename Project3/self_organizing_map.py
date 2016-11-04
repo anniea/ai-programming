@@ -1,4 +1,4 @@
-from helpers import read_tsp_data, plot_intermediate_tsp, plot_solution_tsp
+from helpers import read_tsp_data, plot_intermediate_tsp, plot_solution_tsp, plot_decay_reductions
 import numpy as np
 import math
 
@@ -19,44 +19,61 @@ iteration_limit = base_iteration_limit * iteration_multiple
 linear_constant = 7.25/(1000 * iteration_multiple * iteration_limit)
 decay_interval = 10
 plotting = True
+plot_interval = int(iteration_limit/10)  # plot current scaffold ten times during execution
 
 # choose decay types for learning rate (lr) and radius
 # decay_type = 'static'
 # decay_type = 'linear'
 decay_type = 'exponential'
+
+# set static learning rate
+if decay_type == 'static':
+	initial_learning_rate = 0.25
 	
 	
 def main():
-	# find_tsp_solution(tsp)
-	auto_runner()
+	find_tsp_solution(tsp)
+	# auto_runner()
 	
 
 def find_tsp_solution(tsp_name):
 	global no_of_neurons, initial_radius
+	
+	print('\n\nFind solution to TSP ' + tsp_name)
 
 	# read data from TSP data set
 	cities_scaled, cities = read_tsp_data(tsp_name)
 	
 	# set global parameters based on the data
 	no_of_neurons = len(cities) * 2
-	initial_radius = math.ceil(no_of_neurons/10)
+	if decay_type != 'static':
+		initial_radius = math.ceil(no_of_neurons/10)
+	else:
+		# set static neighborhood radius
+		initial_radius = math.ceil(no_of_neurons/20)
 	
 	# create an initial random self-organizing-map (SOM)
 	initial_som = np.random.rand(no_of_neurons, 2)
 	
 	# use the SOM to create a scaffold
-	scaffold = create_scaffold(initial_som, cities_scaled, initial_learning_rate, initial_radius)
+	scaffold = create_scaffold(initial_som, cities_scaled, initial_learning_rate, initial_radius, cities)
 
 	# read solution from scaffold
 	solution = read_solution(scaffold, cities_scaled)
 	
-	# print decay types
+	# print useful information
 	print('\nDecay type:', decay_type)
-
+	print('Number of neurons in the ring:', no_of_neurons)
+	print('Initial learning rate:', initial_learning_rate)
+	print('Initial neighborhood radius:', initial_radius)
+	
 	# print traversal distance of initial and final solution
 	solution_distance = get_total_distance(cities, solution)
 	print('Initial distance:', get_total_distance(cities, [x for x in range(len(cities))]))
 	print('Solution distance:', solution_distance)
+	
+	# plot decay function reductions
+	plot_decay_reductions(iteration_limit, decay_interval, linear_constant, initial_radius, tsp_name)
 
 	# plot solution traversal with length
 	plot_solution_tsp(np.array([cities[i] for i in solution]), solution_distance, tsp_name)
@@ -64,11 +81,13 @@ def find_tsp_solution(tsp_name):
 	return solution_distance
 
 
-def create_scaffold(som, cities_scaled, learning_rate, radius):
+def create_scaffold(som, cities_scaled, learning_rate, radius, cities):
 
 	if plotting:
 		# plot initial (random) scaffold
-		plot_intermediate_tsp(som, cities_scaled, 0)
+		initial_distance = get_total_distance(cities, read_solution(som, cities_scaled))
+		print('\nDistance of initial (random) solution is %.2f' % initial_distance)
+		plot_intermediate_tsp(som, cities_scaled, 0, initial_distance)
 
 	for i in range(iteration_limit):
 		# select random city
@@ -95,8 +114,11 @@ def create_scaffold(som, cities_scaled, learning_rate, radius):
 			som[next_neighbor] += spatial_decay * learning_rate * (city - som[next_neighbor])
 			som[prev_neighbor] += spatial_decay * learning_rate * (city - som[prev_neighbor])
 
-		if plotting and not (i+1) % int(iteration_limit/10):
-			plot_intermediate_tsp(som, cities_scaled, i+1)
+		# plot intermediate scaffold with distance of current solution at a given interval
+		if plotting and not (i+1) % plot_interval:
+			current_distance = get_total_distance(cities, read_solution(som, cities_scaled))
+			print('Distance of current solution at iteration %d is %.2f' % ((i+1), current_distance))
+			plot_intermediate_tsp(som, cities_scaled, i+1, current_distance)
 		
 		# decay learning rate and radius at certain intervals
 		if not (i+1) % decay_interval:
@@ -107,8 +129,12 @@ def create_scaffold(som, cities_scaled, learning_rate, radius):
 			
 			# perform learning rate decay
 			if decay_type == 'static':
-				learning_rate -= decay_interval/iteration_limit
-				radius -= initial_radius * decay_interval/iteration_limit
+				# old interpretation: decay is static in the sense that the amount deducted does not change
+				# learning_rate -= decay_interval/iteration_limit
+				# radius -= initial_radius * decay_interval/iteration_limit
+			
+				# new interpretation (from TA): learning rate and radius is static, i.e. they do not change
+				pass
 			elif decay_type == 'linear':
 				learning_rate -= linear_constant * (iteration_limit-i-1)
 				radius -= initial_radius * linear_constant * (iteration_limit-i-1)
