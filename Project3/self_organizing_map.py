@@ -73,7 +73,8 @@ def find_tsp_solution(tsp_name):
 	print('Solution distance:', solution_distance)
 	
 	# plot decay function reductions
-	plot_decay_reductions(iteration_limit, decay_interval, linear_constant, initial_radius, tsp_name)
+	if decay_type != 'static':
+		plot_decay_reductions(iteration_limit, decay_interval, linear_constant, initial_radius, tsp_name)
 
 	# plot solution traversal with length
 	plot_solution_tsp(np.array([cities[i] for i in solution]), solution_distance, tsp_name)
